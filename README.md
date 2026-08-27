@@ -1,9 +1,7 @@
-# Mihon app preview builds
+# Taihon Nightly Builds
 
-[![Build job](https://github.com/mihonapp/mihon-preview/actions/workflows/build.yml/badge.svg)](https://github.com/mihonapp/mihon-preview/actions/workflows/build_app.yml) [![Latest build](https://img.shields.io/github/v/release/mihonapp/mihon-preview.svg?maxAge=3600&label=Latest%20build)](https://github.com/mihonapp/mihon-preview/releases)
+[![Build job](https://github.com/Saud-97/taihon/actions/workflows/build.yml/badge.svg)](https://github.com/Saud-97/taihon/actions/workflows/build.yml) [![Latest build](https://img.shields.io/github/v/release/Saud-97/taihon-nightly.svg?maxAge=3600&label=Latest%20build)](https://github.com/Saud-97/taihon-nightly/releases)
 
-This repository houses the preview builds for [Mihon](https://github.com/mihonapp/mihon).
+This repository houses the nightly builds for [Taihon](https://github.com/Saud-97/taihon).
 
-For downloads, see [Releases](https://github.com/mihonapp/mihon-preview/releases).
-
-To download the stable release, see https://mihon.app/download/
+For downloads, see [Releases](https://github.com/Saud-97/taihon-nightly/releases).
