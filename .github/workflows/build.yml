@@ -56,12 +56,10 @@ jobs:
           echo "current-sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
           tag_name=$(gh release list --repo Saud-97/taihon-nightly --exclude-drafts --exclude-pre-releases --json tagName --limit 1 --jq 'select(length > 0) | .[0].tagName')
-          if [ -n "$tag_name" ]; then
-            echo "Latest Tag: $tag_name"
-          else
-            echo "Failed to get repository information"
-            exit 1
+          if [ -z "$tag_name" ]; then
+            tag_name="r0"
           fi
+          echo "Latest Tag: $tag_name"
           echo "prev-tag=$tag_name" >> $GITHUB_OUTPUT
 
           prev_commit_count=$(echo "$tag_name" | sed -e "s/^r//")
@@ -121,15 +119,23 @@ jobs:
 
           prev_commit_count=$(echo "${{ env.PREV_TAG }}" | sed -e "s/^r//")
           commit_count_diff=$(expr ${{ env.COMMIT_COUNT }} - $prev_commit_count)
-          prev_release_sha=$(git rev-parse --short HEAD~$commit_count_diff)
-          echo "PREV_RELEASE_SHA=$prev_release_sha" >> $GITHUB_ENV
+          
+          if [ "${{ env.PREV_TAG }}" != "r0" ]; then
+            prev_release_sha=$(git rev-parse --short HEAD~$commit_count_diff)
+            echo "PREV_RELEASE_SHA=$prev_release_sha" >> $GITHUB_ENV
+            echo "COMPARE_URL=https://github.com/Saud-97/taihon/compare/$prev_release_sha...${{ env.CURRENT_SHA }}" >> $GITHUB_ENV
 
-          echo "COMMIT_LOGS<<{delimiter}
-          $(curl -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/Saud-97/taihon/compare/$prev_release_sha...${{ env.CURRENT_SHA }}" \
-            | jq '[.commits[]|{message:(.commit.message | split("\n")), username:.author.login}]' \
-            | jq -r '.[]|"- \(.message | first) (@\(.username))"')
-          {delimiter}" >> $GITHUB_ENV
+            echo "COMMIT_LOGS<<{delimiter}
+            $(curl -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/Saud-97/taihon/compare/$prev_release_sha...${{ env.CURRENT_SHA }}" \
+              | jq '[.commits[]|{message:(.commit.message | split("\n")), username:.author.login}]' \
+              | jq -r '.[]|"- \(.message | first) (@\(.username))"')
+            {delimiter}" >> $GITHUB_ENV
+          else
+            echo "PREV_RELEASE_SHA=" >> $GITHUB_ENV
+            echo "COMPARE_URL=https://github.com/Saud-97/taihon/commits/${{ env.CURRENT_SHA }}" >> $GITHUB_ENV
+            echo "COMMIT_LOGS=Initial release" >> $GITHUB_ENV
+          fi
 
       - name: Clean up build artifacts
         run: |
@@ -150,7 +156,7 @@ jobs:
           body: |
             ### Commits
 
-            https://github.com/Saud-97/taihon/compare/${{ env.PREV_RELEASE_SHA }}...${{ env.CURRENT_SHA }}
+            ${{ env.COMPARE_URL }}
 
             ${{ env.COMMIT_LOGS }}
 
