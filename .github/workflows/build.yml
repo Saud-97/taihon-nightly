@@ -123,19 +123,19 @@ jobs:
           set -e
 
           prev_commit_count=$(echo "${{ env.PREV_TAG }}" | sed -e "s/^r//")
-          commit_count_diff=$(expr ${{ env.COMMIT_COUNT }} - $prev_commit_count)
+          commit_count_diff=$((${{ env.COMMIT_COUNT }} - $prev_commit_count))
           
           if [ "${{ env.PREV_TAG }}" != "r0" ]; then
             prev_release_sha=$(git rev-parse --short HEAD~$commit_count_diff)
             echo "PREV_RELEASE_SHA=$prev_release_sha" >> $GITHUB_ENV
             echo "COMPARE_URL=https://github.com/Saud-97/taihon/compare/$prev_release_sha...${{ env.CURRENT_SHA }}" >> $GITHUB_ENV
 
-            echo "COMMIT_LOGS<<{delimiter}
-            $(curl -H "Accept: application/vnd.github.v3+json" \
+            echo "COMMIT_LOGS<<{delimiter}" >> $GITHUB_ENV
+            curl -s -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/Saud-97/taihon/compare/$prev_release_sha...${{ env.CURRENT_SHA }}" \
-              | jq '[.commits[]|{message:(.commit.message | split("\n")), username:.author.login}]' \
-              | jq -r '.[]|"- \(.message | first) (@\(.username))"')
-            {delimiter}" >> $GITHUB_ENV
+              | jq '[.commits[]?|{message:(.commit.message | split("\n")), username:.author.login}]' \
+              | jq -r '.[]|"- \(.message | first) (@\(.username))"' >> $GITHUB_ENV
+            echo "{delimiter}" >> $GITHUB_ENV
           else
             echo "PREV_RELEASE_SHA=" >> $GITHUB_ENV
             echo "COMPARE_URL=https://github.com/Saud-97/taihon/commits/${{ env.CURRENT_SHA }}" >> $GITHUB_ENV
